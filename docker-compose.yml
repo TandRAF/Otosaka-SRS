@@ -1,0 +1,31 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: my_database
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pass
+    ports:
+      - "3307:3306" # Connect from your PC via 3307; containers use 3306
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # This maps your SQL script to the auto-run folder
+      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+
+  backend:
+    build:
+      context: ./server   
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    environment:
+      - ASPNETCORE_HTTP_PORTS=8080        # Required for .NET 8/9
+      - ASPNETCORE_URLS=http://0.0.0.0:8080 # Forces binding to all interfaces
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "8080:8080"
+volumes:
+  mysql_data:
