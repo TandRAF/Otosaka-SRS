@@ -22,6 +22,22 @@ namespace server.Data
                 .HasMany(u => u.Desks)
                 .WithOne(d => d.User)
                 .HasForeignKey(d => d.UserId);
+            builder.Entity<User>()
+                .HasOne(u => u.Profile)
+                .WithOne()
+                .HasForeignKey<Profile>(p => p.UserId);
+             builder.Entity<Desk>()
+                .HasMany(d => d.Cards)
+                .WithOne(c => c.Desk)
+                .HasForeignKey(c => c.DeskId);
+            builder.Entity<Desk>()
+                .HasMany(d => d.SubDesks)
+                .WithOne(d => d.ParentDesk)
+                .HasForeignKey(d => d.ParentDeskId);
+            builder.Entity<Note>()
+                .HasMany(n => n.Cards)
+                .WithOne(c => c.Note)
+                .HasForeignKey(c => c.NoteId);
         } 
     };
 }

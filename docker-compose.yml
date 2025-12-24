@@ -12,8 +12,6 @@ services:
       - "3307:3306" # Connect from your PC via 3307; containers use 3306
     volumes:
       - mysql_data:/var/lib/mysql
-      # This maps your SQL script to the auto-run folder
-      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
 
   backend:
     build:

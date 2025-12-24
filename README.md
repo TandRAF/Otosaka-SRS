@@ -7,3 +7,6 @@ docker-compose up -d
 ```
 ## Database Diagram
 ![diagram](assets/uml-diagram.png)
+## Entities Sequences Diagrama
+### Notes
+![note-diagrama](assets/noteSequencesDiagrama.png)

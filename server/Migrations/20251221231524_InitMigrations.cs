@@ -7,7 +7,7 @@ using MySql.EntityFrameworkCore.Metadata;
 namespace server.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitMigrations : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -21,7 +21,6 @@ namespace server.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    DeskId = table.Column<int>(type: "int", nullable: false),
                     NoteType = table.Column<string>(type: "longtext", nullable: false),
                     ContentJSON = table.Column<string>(type: "longtext", nullable: false)
                 },
@@ -45,43 +44,23 @@ namespace server.Migrations
                 .Annotation("MySQL:Charset", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Cards",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    NoteId = table.Column<int>(type: "int", nullable: false),
-                    Ordinal = table.Column<string>(type: "longtext", nullable: false),
-                    NextReviewDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    EaseFactor = table.Column<double>(type: "double", nullable: false),
-                    IntervalDays = table.Column<double>(type: "double", nullable: false),
-                    Repetitions = table.Column<int>(type: "int", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Cards", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Cards_Notes_NoteId",
-                        column: x => x.NoteId,
-                        principalTable: "Notes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
-
-            migrationBuilder.CreateTable(
                 name: "Desks",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     UserId = table.Column<int>(type: "int", nullable: false),
+                    ParentDeskId = table.Column<int>(type: "int", nullable: true),
                     Title = table.Column<string>(type: "longtext", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Desks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Desks_Desks_ParentDeskId",
+                        column: x => x.ParentDeskId,
+                        principalTable: "Desks",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Desks_User_UserId",
                         column: x => x.UserId,
@@ -98,6 +77,7 @@ namespace server.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     UserId = table.Column<int>(type: "int", nullable: false),
+                    UserId1 = table.Column<int>(type: "int", nullable: false),
                     Bio = table.Column<string>(type: "longtext", nullable: false),
                     Scope = table.Column<string>(type: "longtext", nullable: false)
                 },
@@ -110,13 +90,62 @@ namespace server.Migrations
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Profiles_User_UserId1",
+                        column: x => x.UserId1,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySQL:Charset", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "Cards",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                    NoteId = table.Column<int>(type: "int", nullable: false),
+                    DeskId = table.Column<int>(type: "int", nullable: false),
+                    Ordinal = table.Column<string>(type: "longtext", nullable: false),
+                    NextReviewDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    EaseFactor = table.Column<double>(type: "double", nullable: false),
+                    IntervalDays = table.Column<double>(type: "double", nullable: false),
+                    Repetitions = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Cards", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Cards_Desks_DeskId",
+                        column: x => x.DeskId,
+                        principalTable: "Desks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Cards_Notes_NoteId",
+                        column: x => x.NoteId,
+                        principalTable: "Notes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySQL:Charset", "utf8mb4");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cards_DeskId",
+                table: "Cards",
+                column: "DeskId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Cards_NoteId",
                 table: "Cards",
                 column: "NoteId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Desks_ParentDeskId",
+                table: "Desks",
+                column: "ParentDeskId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Desks_UserId",
@@ -128,6 +157,11 @@ namespace server.Migrations
                 table: "Profiles",
                 column: "UserId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Profiles_UserId1",
+                table: "Profiles",
+                column: "UserId1");
         }
 
         /// <inheritdoc />
@@ -137,10 +171,10 @@ namespace server.Migrations
                 name: "Cards");
 
             migrationBuilder.DropTable(
-                name: "Desks");
+                name: "Profiles");
 
             migrationBuilder.DropTable(
-                name: "Profiles");
+                name: "Desks");
 
             migrationBuilder.DropTable(
                 name: "Notes");

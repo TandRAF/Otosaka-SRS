@@ -11,8 +11,8 @@ using server.Data;
 namespace server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251219205459_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251221231524_InitMigrations")]
+    partial class InitMigrations
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,6 +26,9 @@ namespace server.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("DeskId")
                         .HasColumnType("int");
 
                     b.Property<double>("EaseFactor")
@@ -52,6 +55,8 @@ namespace server.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DeskId");
+
                     b.HasIndex("NoteId");
 
                     b.ToTable("Cards");
@@ -63,6 +68,9 @@ namespace server.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<int?>("ParentDeskId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -71,6 +79,8 @@ namespace server.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ParentDeskId");
 
                     b.HasIndex("UserId");
 
@@ -86,9 +96,6 @@ namespace server.Migrations
                     b.Property<string>("ContentJSON")
                         .IsRequired()
                         .HasColumnType("longtext");
-
-                    b.Property<int>("DeskId")
-                        .HasColumnType("int");
 
                     b.Property<string>("NoteType")
                         .IsRequired()
@@ -116,10 +123,15 @@ namespace server.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<int>("UserId1")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("UserId")
                         .IsUnique();
+
+                    b.HasIndex("UserId1");
 
                     b.ToTable("Profiles");
                 });
@@ -137,20 +149,36 @@ namespace server.Migrations
 
             modelBuilder.Entity("server.Models.Card", b =>
                 {
-                    b.HasOne("server.Models.Note", null)
+                    b.HasOne("server.Models.Desk", "Desk")
+                        .WithMany("Cards")
+                        .HasForeignKey("DeskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("server.Models.Note", "Note")
                         .WithMany("Cards")
                         .HasForeignKey("NoteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Desk");
+
+                    b.Navigation("Note");
                 });
 
             modelBuilder.Entity("server.Models.Desk", b =>
                 {
+                    b.HasOne("server.Models.Desk", "ParentDesk")
+                        .WithMany("SubDesks")
+                        .HasForeignKey("ParentDeskId");
+
                     b.HasOne("server.Models.User", "User")
                         .WithMany("Desks")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ParentDesk");
 
                     b.Navigation("User");
                 });
@@ -162,6 +190,21 @@ namespace server.Migrations
                         .HasForeignKey("server.Models.Profile", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("server.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("server.Models.Desk", b =>
+                {
+                    b.Navigation("Cards");
+
+                    b.Navigation("SubDesks");
                 });
 
             modelBuilder.Entity("server.Models.Note", b =>
